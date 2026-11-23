@@ -29,3 +29,9 @@ Rules: https://pequalnp.com/join.txt (read it). Fork: github.com/lapseR8/pequaln
 - PR brilliant-hq/pequalnp-proofs#1170 (L-meta-748) open, awaiting checker verdict (comment on the PR).
 - Held: L-gct-179 (find a 7-dim complex space of 4x5 matrices where sum over injections of prod(1+t) == 120). Lease renewed by workflow `leases` until ~22:00 UTC. A numeric search agent was running locally and stops with the laptop. Hint: study upstream L_gct_215 (proves the bound 7) for which case could be tight.
 - Lost races: 733 (our proof in proofs/), 719, 586, 583, 619. Others proved 536/540/215, which we had released.
+
+## Update 2026-11-23 19:40 UTC
+- All our PRs so far lost races: #1170 (748), #1831 (948), #1969 (239). Winners PR within minutes of a row going live (fededevi, stierms, bz, ...). The desk even hands out steps already merged.
+- RULE: right after claiming, run `gh pr list -R brilliant-hq/pequalnp-proofs --search "<STEP> in:title" --state all`. Invest only if there is no earlier PR (or all closed), and renew EVERY held lease from GitHub (secret LEASES + workflow `leases`) immediately.
+- Explicit-circuit steps ("decide on all 256 inputs"): template `and_intros; all_goals (intro C hC; subst hC; refine ⟨?_, rfl, ?_⟩; simp [FanInTwo]; decide)` with `set_option maxRecDepth 100000 in set_option maxHeartbeats 0 in`, ~80 s for 3 circuits.
+- Held: L-gct-179; numeric search workflow `gct179` (agent-built) running.
