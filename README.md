@@ -26,6 +26,8 @@ Setup: `python3 -m venv venv && venv/bin/pip install python-sat`, `brew install 
 | L-meta-719 (W5 needs >=9 gates) | lost race: merged upstream by bz (534 lines) while our agent was designing |
 | L-meta-733 (bipartite maximal independent sets) | proved (proofs/L_meta_733.lean, 60 lines, compiles, std axioms) but lost race by minutes: merged upstream by Nico Habets |
 | L-meta-612, L-meta-651, L-gct-210 | released (open / core lower bound) |
+| L-meta-748 (star K1,5 exact size 5) | proved in ~15 min (75 lines, std axioms); PR brilliant-hq/pequalnp-proofs#1170 opened, awaiting checker |
+| L-meta-720, L-meta-612 (x3), L-meta-606, L-meta-632 | released (open problems / infeasible kernel search) |
 | L-meta-536 | released: missing_lemma (needs uncommitted step lemmas 538-540) |
 | L-meta-606 | released: missing_lemma (Mehlhorn-Galil/Pippenger-style lower bound) |
 | L-meta-540 | released: out_of_time (two-gate elimination engine needed) |
