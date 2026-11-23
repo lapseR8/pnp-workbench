@@ -9,6 +9,26 @@ lease=$(python3 -c "import json;print(json.load(open('$J'))['lease']['id'])")
 if grep -qE 'sorry|native_decide|"|^ *#' "$rel"; then echo "RULE VIOLATION"; exit 1; fi
 git fetch -q upstream
 if git ls-tree upstream/main "$rel" | grep -q .; then echo "ALREADY MERGED UPSTREAM"; exit 1; fi
+T0=$(mktemp -d); curl -s https://data.pequalnp.com/data/desk/gaps.json -o "$T0/gaps.json"
+python3 - "$T0/gaps.json" "$id" "$T0/st.txt" <<'PY' || exit 1
+import json, sys
+d = json.load(open(sys.argv[1])); i = sys.argv[2]
+gaps = d["gaps"]; gaps = gaps if isinstance(gaps, list) else list(gaps.values())
+def ids(x): return {(g.get("id") if isinstance(g, dict) else g) for g in (x if isinstance(x, list) else list(x))}
+g = next((g for g in gaps if g.get("id") == i), None)
+if g is None or i in ids(d.get("withdrawn", [])) or i in ids(d.get("checked", [])):
+    print("GUARD: step not posted (withdrawn/checked/missing)"); sys.exit(1)
+if (g.get("weight") or 0) <= 1:
+    print("GUARD: weight 1 (stood down)"); sys.exit(1)
+open(sys.argv[3], "w").write(g["statement"])
+print("GUARD: posted, weight", g.get("weight"))
+PY
+c=$(curl -s -o /dev/null -w '%{http_code}' -X POST "https://pequalnp.com/desk/beat?lease=$lease")
+[ "$c" = 200 ] || { echo "GUARD: lease $c (not held)"; exit 1; }
+gh pr list -R brilliant-hq/pequalnp-proofs --search "$id in:title" --state merged --json number --jq '.[].number' | grep -q . && { echo "GUARD: a PR for $id is already merged"; exit 1; }
+echo "running official checker..."
+node tools/check-lean.mjs "$rel" "$T0/st.txt" check > "$T0/check.txt" 2>&1; rc=$?
+tail -2 "$T0/check.txt"; [ $rc = 0 ] || { echo "GUARD: official checker rejected (exit $rc)"; exit 1; }
 T=$(mktemp -d); cp "$rel" "$T/c.lean"; echo "#print axioms $mod" >> "$T/c.lean"
 if [ -S /tmp/claude-502/leanserver.sock ]; then
   ax=$(python3 "$SELF/leanq.py" "$rel" --axioms "$mod" --all 2>&1 | grep -E "^error|depends on axioms|SERVER ERROR" || true)
