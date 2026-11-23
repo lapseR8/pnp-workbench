@@ -51,6 +51,8 @@ jobs:
             SEED=$(( ${{ github.run_id }} % 100000 * 10 + p ))
             case "${{ inputs.mode }}" in
               ext6) CMD="python ext6.py ${{ inputs.d }} $SEED ${{ inputs.secs }} ../$OUT.p$p.txt" ;;
+              seeds) CMD="python seeds.py ${{ inputs.d }} $SEED ${{ inputs.secs }} ../$OUT.p$p.txt" ;;
+              combo) if [ $((p % 2)) = 1 ]; then CMD="python seeds.py ${{ inputs.d }} $SEED ${{ inputs.secs }} ../$OUT.p$p.txt"; else CMD="python sym.py ${{ inputs.d }} $SEED ${{ inputs.secs }} ../$OUT.p$p.txt"; fi ;;
               sym) CMD="python sym.py ${{ inputs.d }} $SEED ${{ inputs.secs }} ../$OUT.p$p.txt" ;;
               *) CMD="python cloud.py ${{ inputs.mode }} ${{ inputs.d }} $SEED ${{ inputs.secs }} ../$OUT.p$p.txt" ;;
             esac
