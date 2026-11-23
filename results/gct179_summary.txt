@@ -27,6 +27,24 @@ Status: NO 7-dim witness found. d=7 stalls at an honest residual of about 0.1, w
      directions w(H) (matches attacker C, section C3). A 7-dim L exists iff some 6-solution H has span(H, w(H)) exact.
      For random H, the s^2, s^3, s^4 coefficients of E_k(h + s w) are O(1).
 
+1b. The universal obstruction also holds at RANDOM generic 6-solutions (new; numerical)
+   10 random full-support 6-solutions came from LM (seed 5). Their tangent dims of 7-10 put them on several different
+   components, and none is a cross, F_b, W6 or g180. For every one of them:
+     - the first-order extension space is T(H) = H + <w>, 1-dim modulo H
+       (singular-value floor 1e-7 against a gap of 2e-3);
+     - all mixed terms of E_k(h + s w) vanish to within accuracy, so E_k is constant on the coset w + H;
+     - the profile is exactly per(J + mu w) = 120 (1+mu)^3 (1-3 mu) after rescaling, i.e. in the problem's
+       normalisation E3^2/(E2 E4) = 16/3 and E2^2/E4 = -40 (matched to about 1e-5 relative);
+     - w = J - 20 e_rc mod H for ONE distinguished cell (r,c). After Gauss-Newton polishing (|resid| 1e-12) the
+       first-order residual of J - 20 e_rc is 1.6e-6 relative, against 1e-2 for every other cell. Equivalently, the
+       restriction of H to the 3x4 minor that avoids row r and column c kills the 3x4 forms E1, E2, E3: about 1e-5
+       relative, against O(1) for other minors. Note per(J + mu(J - 20 e_rc)) = 120(1+mu)^3(1-3mu) identically.
+   So the obstruction attacker A found in the four rigid families appears to hold for EVERY 6-solution:
+   "each 6-solution H has a cell (r,c) with H|minor(r,c) a 3x4 solution, and T(H) = H + <J - 20 e_rc>", where
+   E2(J - 20 e_rc) != 0. If T(H) is 7-dim for every hyperplane H of a putative 7-dim L, then L = T(H) contains
+   J - 20 e_rc, which fails E2, so L cannot exist. The gap: the hyperplanes of a putative L are special 6-solutions,
+   and T(H) could be larger there. Suggested lemma for the provers: show that a 6-solution always has such a cell.
+
 2. d=7 campaigns
    GitHub run 45246949847 (mode mix, seed 498471, 1 process*): 3350 restarts (1675 iso + 1675 gen).
        iso-chart best f = 2.8e-4 (artifact, see section 0). gen-chart best f = 0.97.
@@ -41,6 +59,8 @@ Status: NO 7-dim witness found. d=7 stalls at an honest residual of about 0.1, w
        All seeds were verified exact first (check_basis about 1e-14).
    Local sym.py d=7 (seed 77, all 34 cyclic classes of S4xS5 with eigenvalue twists, E2-isotropy filter):
        164 ansatz attempts, best f = 0.113 (class e|(0123), eigen-dims 0:3, 1:4). Next best 1.6.
+       Second local run (seed 78): 504+ attempts, best 0.114, again e|(0123) with dims 0:3, 3:4 (the same symmetric
+       local minimum, reached repeatedly).
 
    *The workflow ran 1 process per job: nproc honours OMP_NUM_THREADS=1. Fixed in ca0b093 (nproc --all).
     Future jobs will use every core.
@@ -56,3 +76,7 @@ Status: NO 7-dim witness found. d=7 stalls at an honest residual of about 0.1, w
 
 Code: gct179/ext6.py (grow (d-1)-solutions), gct179/seeds.py (A/C families), gct179/sym.py (E2-isotropy filter),
       workflow modes ext6 / seeds / combo / sym.
+
+Reproduce: gct179/an_sols6.py (random 6-solutions plus tangent dims), gct179/an_obstruction.py and an_polish_cell.py
+(first-order direction, profile, distinguished cell), gct179/an_near7.py (E-split, best hyperplane, nearest 6-solution
+and re-polish of d=7 minima). Data: results/gct179_sols6_seed5.npy (10 bases), results/gct179_near7_iso_seed11.npy.
