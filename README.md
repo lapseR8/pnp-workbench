@@ -16,7 +16,7 @@ Setup: `python3 -m venv venv && venv/bin/pip install python-sat`, `brew install 
 ## Results log (2026-11-23)
 | Step | Result |
 |---|---|
-| L-meta-619 (wheel W5, <=8 gates) | UNSAT at 8 gates (search2.py, copies allowed, so covers <=8). Cross-check at 9 running. |
+| L-meta-619 (wheel W5, <=8 gates) | UNSAT at 8 gates (search2.py, copies allowed, so covers <=8). Lease got 410 at 10:15 local (settled or withdrawn upstream); work stopped, 9-gate cross-check not finished. |
 | L-meta-586 (two 5-cycles sharing an edge, <=7 OR) | 8 OR found (12 gates). 7 OR: kissat runs at N=11..17 in progress. |
 | L-meta-536 | released: missing_lemma (needs uncommitted step lemmas 538-540) |
 | L-meta-606 | released: missing_lemma (Mehlhorn-Galil/Pippenger-style lower bound) |
