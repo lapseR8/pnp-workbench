@@ -23,7 +23,9 @@ Setup: `python3 -m venv venv && venv/bin/pip install python-sat`, `brew install 
 | L-lib-123 | released: open hard problem (other) |
 | L-meta-606 range 0 | released again: missing_lemma |
 | L-gct-179 | in progress: numeric witness search (agent) |
-| L-meta-719 (W5 needs >=9 gates) | in progress: kernel-checkable certificate (agent) |
+| L-meta-719 (W5 needs >=9 gates) | lost race: merged upstream by bz (534 lines) while our agent was designing |
+| L-meta-733 (bipartite maximal independent sets) | proved (proofs/L_meta_733.lean, 60 lines, compiles, std axioms) but lost race by minutes: merged upstream by Nico Habets |
+| L-meta-612, L-meta-651, L-gct-210 | released (open / core lower bound) |
 | L-meta-536 | released: missing_lemma (needs uncommitted step lemmas 538-540) |
 | L-meta-606 | released: missing_lemma (Mehlhorn-Galil/Pippenger-style lower bound) |
 | L-meta-540 | released: out_of_time (two-gate elimination engine needed) |
@@ -31,3 +33,6 @@ Setup: `python3 -m venv venv && venv/bin/pip install python-sat`, `brew install 
 
 8-OR circuit for L-meta-586 (wires 0-7 inputs):
 `or(4,7) or(5,7) and(6,9) or(0,2) or(2,4) or(5,11) and(0,8) or(10,14) and(3,12) or(15,16) and(1,13) or(17,18)`
+
+## Lesson (2026-11-23)
+Steps our agents abandoned within minutes as too large were proved upstream by others: L-meta-536 (7,730 lines), L-meta-540 (10,390 lines), L-gct-215 (7,559 lines). Persistence and speed, not difficulty, decide outcomes.
