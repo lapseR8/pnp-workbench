@@ -1,0 +1,39 @@
+name: gct179alg
+on:
+  workflow_dispatch:
+    inputs:
+      batch:
+        description: 'tarball name in gct179alg/ (cases/*.sing)'
+        default: 'cases.tgz'
+      per:
+        description: 'seconds per case'
+        default: '900'
+      tag:
+        description: 'result tag'
+        default: 'a'
+permissions:
+  contents: write
+concurrency:
+  group: gct179alg
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Singular
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq singular > /dev/null && which Singular
+      - name: Run cases
+        run: |
+          git config user.name lapseR8
+          git config user.email 269838972+lapseR8@users.noreply.github.com
+          cd gct179alg && mkdir -p work && tar xzf ${{ inputs.batch }} -C work
+          OUT=../results/gct179alg_${{ inputs.tag }}_${{ github.run_id }}.txt
+          mkdir -p ../results; : > $OUT
+          push() { cd ..; git add results/; git commit -q -m "gct179alg ${{ inputs.tag }} ${{ github.run_id }}" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" || true; for k in 1 2 3 4 5; do git pull -q --rebase && git push -q && break; sleep 7; done; cd gct179alg; }
+          N=$(nproc); echo cores $N
+          ls work/*.sing | xargs -P $N -I{} sh -c 'r=$(timeout ${{ inputs.per }} Singular -q {} 2>&1 | tail -1); echo "$(basename {}) ${r:-TIMEOUT}"' >> $OUT &
+          XP=$!
+          while kill -0 $XP 2>/dev/null; do sleep 600; push; done
+          push
