@@ -37,7 +37,7 @@ jobs:
           pip install numpy
           git config user.name lapseR8
           git config user.email 269838972+lapseR8@users.noreply.github.com
-          N=$(nproc); echo "cores $N"
+          N=$(nproc --all); echo "cores $N"  # plain nproc honours OMP_NUM_THREADS=1
           OUT=results/gct179_${{ inputs.tag }}_${{ inputs.mode }}_d${{ inputs.d }}_${{ github.run_id }}
           mkdir -p results
           push() {
