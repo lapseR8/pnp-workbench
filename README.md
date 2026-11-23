@@ -17,7 +17,13 @@ Setup: `python3 -m venv venv && venv/bin/pip install python-sat`, `brew install 
 | Step | Result |
 |---|---|
 | L-meta-619 (wheel W5, <=8 gates) | UNSAT at 8 gates (search2.py, copies allowed, so covers <=8). Lease got 410 at 10:15 local (settled or withdrawn upstream); work stopped, 9-gate cross-check not finished. |
-| L-meta-586 (two 5-cycles sharing an edge, <=7 OR) | 8 OR found (12 gates). 7 OR: kissat runs at N=11..17 in progress. |
+| L-meta-586 (two 5-cycles sharing an edge, <=7 OR) | 8 OR found (12 gates). 7-OR runs (N=11..17) cancelled unfinished: lease got 410 at ~11:10 local (settled or withdrawn upstream). |
+| L-meta-583 (subdivided K4, <=14 gates) | runs N=9..14 started, cancelled after ~10 min: lease got 410 (settled upstream). |
+| L-meta-582 (Heawood, <=26 gates) | released: SAT instance too large (other) |
+| L-lib-123 | released: open hard problem (other) |
+| L-meta-606 range 0 | released again: missing_lemma |
+| L-gct-179 | in progress: numeric witness search (agent) |
+| L-meta-719 (W5 needs >=9 gates) | in progress: kernel-checkable certificate (agent) |
 | L-meta-536 | released: missing_lemma (needs uncommitted step lemmas 538-540) |
 | L-meta-606 | released: missing_lemma (Mehlhorn-Galil/Pippenger-style lower bound) |
 | L-meta-540 | released: out_of_time (two-gate elimination engine needed) |
