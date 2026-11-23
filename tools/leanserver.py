@@ -6,7 +6,8 @@ BASE = "/Users/Ethan/Library/Application Support/Claude/scratch-workspaces/b53eb
 LEAN_DIR = BASE + "/pequalnp-proofs/lean"
 REPL = BASE + "/ours/repl/.lake/build/bin/repl"
 SOCK = "/tmp/claude-502/leanserver.sock"
-LAKE = os.path.expanduser("~/.elan/bin/lake")
+import shutil
+LAKE = shutil.which("lake") or "/opt/homebrew/bin/lake"
 
 class Repl:
     def __init__(self):

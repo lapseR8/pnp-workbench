@@ -35,3 +35,11 @@ Rules: https://pequalnp.com/join.txt (read it). Fork: github.com/lapseR8/pequaln
 - RULE: right after claiming, run `gh pr list -R brilliant-hq/pequalnp-proofs --search "<STEP> in:title" --state all`. Invest only if there is no earlier PR (or all closed), and renew EVERY held lease from GitHub (secret LEASES + workflow `leases`) immediately.
 - Explicit-circuit steps ("decide on all 256 inputs"): template `and_intros; all_goals (intro C hC; subst hC; refine ⟨?_, rfl, ?_⟩; simp [FanInTwo]; decide)` with `set_option maxRecDepth 100000 in set_option maxHeartbeats 0 in`, ~80 s for 3 circuits.
 - Held: L-gct-179; numeric search workflow `gct179` (agent-built) running.
+
+## Speed tools (2026-11-23, in tools/)
+- `tools/claim.sh [--hard]`: claim one step, print desk info, flag ALREADY MERGED / competing PRs, and put ALL live leases on GitHub renewal (secret LEASES + restarts workflow `leases`). Use this instead of `pnp.sh next`.
+- `tools/release.sh L-x reason`: release, delete skeleton and state file.
+- `tools/submit.sh L-x`: rule grep, upstream check, compile+axioms (warm REPL if running), one-file branch via `../submit` worktree, PR with credit lines, desk release.
+- Warm Lean REPL: `python3 tools/leanserver.py` (background; loads Mathlib+PEqualNP.Defs once, ~40 s), then `python3 tools/leanq.py FILE.lean [--axioms NAME] [--all]` checks in seconds. REPL built from leanprover-community/repl tag v4.36.0 in `../ours/repl`.
+- GitHub compile runner: put a file under `check/`, then `gh workflow run leancheck -R lapseR8/pnp-workbench -f file=check/X.lean -f module=Thm.name`; result lands in `check/results/X.txt`. Use for long compiles so the laptop stays cool.
+- Templates: `templates/gct_span_identity_T6.lean` (span of explicit matrices, per(J+t) identity via the 215 `cK` expansion, finrank).

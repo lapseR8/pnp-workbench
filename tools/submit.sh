@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+SELF="$(cd "$(dirname "$0")" && pwd)"
 # submit.sh L-x : verify the step file (rules, not merged upstream, compiles, std axioms), open the PR via the ../submit worktree, tell the desk.
 set -euo pipefail
 id=$1; R="/Users/Ethan/Library/Application Support/Claude/scratch-workspaces/b53eb492-782f-4b89-a4cd-78a811f342fa/3a48b96d-1945-44a2-a14d-15afce52a49c/scratch-2026-11-23-4f47ca/pequalnp-proofs"
@@ -9,7 +10,11 @@ if grep -qE 'sorry|native_decide|"|^ *#' "$rel"; then echo "RULE VIOLATION"; exi
 git fetch -q upstream
 if git ls-tree upstream/main "$rel" | grep -q .; then echo "ALREADY MERGED UPSTREAM"; exit 1; fi
 T=$(mktemp -d); cp "$rel" "$T/c.lean"; echo "#print axioms $mod" >> "$T/c.lean"
-ax=$(cd lean && PATH="$HOME/.elan/bin:$PATH" lake env lean "$T/c.lean" 2>&1 | grep -E "error|depends on axioms" || true)
+if [ -S /tmp/claude-502/leanserver.sock ]; then
+  ax=$(python3 "$SELF/leanq.py" "$rel" --axioms "$mod" --all 2>&1 | grep -E "^error|depends on axioms|SERVER ERROR" || true)
+else
+  ax=$(cd lean && lake env lean "$T/c.lean" 2>&1 | grep -E "error|depends on axioms" || true)
+fi
 echo "$ax"; echo "$ax" | grep -q error && { echo "COMPILE ERROR"; exit 1; }
 echo "$ax" | grep -q "depends on axioms: \[propext, Classical.choice, Quot.sound\]" || { echo "AXIOM PROBLEM"; exit 1; }
 W="$R/../submit"; [ -d "$W" ] || git worktree add -q "$W" upstream/main

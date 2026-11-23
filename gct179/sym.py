@@ -111,7 +111,40 @@ def chart_block(E, k, rng):
     return [U[i] for i in range(k)], [U[k:] for _ in range(k)]
 
 
-def random_dimvec(dims, d, rng):
+def iso_caps(n, sp):
+    """E2-isotropy limits per eigenspace (pair). returns dict m -> (partner, m_dim, limit on d_m + d_partner)."""
+    from iso import QM
+    caps = {}
+    for m, E in sp.items():
+        mp = (-m) % n
+        if mp not in sp:
+            continue
+        A = E
+        if m == 0:  # restrict to sum-zero part
+            one = np.ones(NE)
+            c = A @ one
+            if np.linalg.norm(c) > 1e-9:
+                u, s_, vh = np.linalg.svd(c[None, :])
+                A = vh[1:].conj() @ A if False else (np.linalg.svd(c[None, :].conj())[2][1:].conj() @ A)
+        Mq = A @ QM @ sp[mp].T
+        r = int(np.sum(np.linalg.svd(Mq, compute_uv=False) > 1e-8))
+        k = A.shape[0]
+        if mp == m:
+            caps[m] = (m, (k - r) + r // 2)
+        else:
+            caps[m] = (mp, 2 * k - r)
+    return caps
+
+
+def dim_ok(v, caps):
+    for m, (mp, lim) in caps.items():
+        tot = v.get(m, 0) + (v.get(mp, 0) if mp != m else 0)
+        if tot > lim:
+            return False
+    return True
+
+
+def random_dimvec(dims, d, rng, caps=None):
     keys = list(dims)
     for _ in range(1000):
         v = {k: 0 for k in keys}
@@ -120,7 +153,7 @@ def random_dimvec(dims, d, rng):
         for k in order_:
             v[k] = int(rng.integers(0, min(dims[k], left) + 1))
             left -= v[k]
-        if left == 0:
+        if left == 0 and (caps is None or dim_ok(v, caps)):
             return v
     return None
 
@@ -138,7 +171,7 @@ if __name__ == '__main__':
         a, b = classes[rng.integers(len(classes))]
         n, sp = eigenspaces(SIG[a], TAU[b])
         dims = {m: E.shape[0] for m, E in sp.items()}
-        v = random_dimvec(dims, d, rng)
+        v = random_dimvec(dims, d, rng, iso_caps(n, sp))
         if v is None:
             continue
         base, Vs = [], []
