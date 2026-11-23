@@ -51,3 +51,8 @@ Rules: https://pequalnp.com/join.txt (read it). Fork: github.com/lapseR8/pequaln
 - Official checker: `node tools/check-lean.mjs <file> <statement file> check` (statement from gaps.json). submit.sh runs it before any PR.
 - Scoring = count of merged steps (weight irrelevant). First PR wins 73%; the winner's open-to-merge median is 26 min. Least contested: very long proofs, GCT linear algebra, circuit lower bounds.
 - Don't release a long known-route step as "too big"; chunk it (planner -> parallel lemma workers -> assembler) instead.
+
+## Paused 2026-11-23 21:15 UTC
+- Released L-gct-179 (statement_seems_false; evidence in results/gct179_evidence/, the max appears to be 6) and L-meta-1356 (out_of_time, paused before starting). No steps held; all Actions runs cancelled.
+- To resume: start `tools/leanserver.py` (warm REPL), run `tools/watch_gaps.py /tmp/claude-502/gaps_seen.json` in the background, claim with `tools/claim.sh`, prove short fresh weight>1 steps immediately, submit with `tools/submit.sh` (official checker guard).
+- Strategy report: results/strategy_2026-11-23.md.

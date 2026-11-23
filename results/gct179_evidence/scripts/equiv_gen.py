@@ -2,7 +2,7 @@
 import itertools, sys, os
 import equiv
 from equiv import *
-def gen_case(g,p,dims,charts,z,orbs,Vk,fname):
+def gen_case(g,p,dims,charts,z,orbs,Vk,fname,GR):
     pnames=[];xinames=[]
     for k in range(p):
         d=dims[k]; n=len(Vk[k])
@@ -17,8 +17,9 @@ def gen_case(g,p,dims,charts,z,orbs,Vk,fname):
             oi=orbs.index(o); val=R.zero
             for a in range(dims[k]):
                 piv=charts[k]
-                coef = R.one if (j in piv and piv.index(j)==a) else (R.zero if j in piv else G[f'p{k}_{a}_{j}'])
-                val+=coef*G[f'x{k}_{a}']
+                for l in range(len(Vk[k])):
+                    coef = R.one if (l in piv and piv.index(l)==a) else (R.zero if l in piv else G[f'p{k}_{a}_{l}'])
+                    if coef!=R.zero and GR[k][l][j]: val+=coef*G[f'x{k}_{a}']*GR[k][l][j]
             yn[(oi,k)]=val
     for oi,o in enumerate(orbs):
         for k in range(p):
@@ -50,10 +51,14 @@ if __name__=="__main__":
         canon=min(tuple(dims[(u*k)%p] for k in range(p)) for u in units)
         if canon in seen: continue
         seen.add(canon)
-        chartlists=[list(itertools.combinations(range(len(Vk[k])),dims[k])) for k in range(p)]
-        for ci,charts in enumerate(itertools.product(*chartlists)):
+        import random
+        nch=int(sys.argv[4]) if len(sys.argv)>4 else 1
+        for ci in range(nch):
+            random.seed(hash((typ,total,dims,ci))%100000)
+            GR={k:[[random.randrange(q) for j in range(len(Vk[k]))] for l in range(len(Vk[k]))] for k in range(p)}
+            charts=[tuple(range(dims[k])) for k in range(p)]
             fn=f"{outdir}/{typ}_{total}_{''.join(map(str,dims))}_{ci}.sing"
-            r=gen_case(g,p,dims,charts,z,orbs,Vk,fn)
+            r=gen_case(g,p,dims,charts,z,orbs,Vk,fn,GR)
             stats[r]=stats.get(r,0)+1
             if r=='VALID': print('VALID',dims,charts)
     print(typ,total,'dimV',[len(Vk[k]) for k in range(p)],stats)

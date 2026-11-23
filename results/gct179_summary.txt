@@ -39,6 +39,10 @@ Status: NO 7-dim witness found. d=7 stalls at an honest residual of about 0.1, w
        first-order residual of J - 20 e_rc is 1.6e-6 relative, against 1e-2 for every other cell. Equivalently, the
        restriction of H to the 3x4 minor that avoids row r and column c kills the 3x4 forms E1, E2, E3: about 1e-5
        relative, against O(1) for other minors. Note per(J + mu(J - 20 e_rc)) = 120(1+mu)^3(1-3mu) identically.
+   The same holds for the 12 symmetric 6-solutions found by sym.py (seed 4; classes such as (01)|(01), e|(0123),
+   (012)|(01)(23)). After polishing, J - 20 e_rc passes the first-order test at 1e-6 to 1e-5 relative, against 5e-3 to
+   2e-2 for the other cells. Ties occur only where two cells are equivalent mod H. Total: 22 numerical 6-solutions plus
+   the 4 exact families, no exception.
    So the obstruction attacker A found in the four rigid families appears to hold for EVERY 6-solution:
    "each 6-solution H has a cell (r,c) with H|minor(r,c) a 3x4 solution, and T(H) = H + <J - 20 e_rc>", where
    E2(J - 20 e_rc) != 0. If T(H) is 7-dim for every hyperplane H of a putative 7-dim L, then L = T(H) contains

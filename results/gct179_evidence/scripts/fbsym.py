@@ -28,18 +28,19 @@ def linsys(Bs):
             e=polar_sym(k,[Bs[a] for a in ms]+[v])
             if e!=0: lin.append(e)
     return sp.Matrix([[sp.expand(sp.diff(e,x)) for x in v] for e in lin])
-Bs=fam(b)
-print('valid symbolic in b:',checkvalid(Bs))
-print('valid at b=inf:',checkvalid(fam_inf()))
-A=linsys(Bs)
-print('A shape',A.shape,'generic rank',A.subs(b,sp.Rational(7,13)).rank())
-# rank-drop locus: gcd of determinants of random 13x13 combos
-random.seed(1)
-g=0
-for trial in range(6):
-    Rm=sp.Matrix(13,A.shape[0],lambda i,j:random.randint(-5,5))
-    Cm=sp.Matrix(20,13,lambda i,j:random.randint(-5,5))
-    d=sp.expand((Rm*A*Cm).det(method='berkowitz'))
-    g=sp.gcd(g,d)
-    print('trial',trial,'gcd so far',sp.factor(g),flush=True)
-# also the 6 basis vectors must stay independent: Pluecker check
+if __name__=='__main__':
+    Bs=fam(b)
+    print('valid symbolic in b:',checkvalid(Bs))
+    print('valid at b=inf:',checkvalid(fam_inf()))
+    A=linsys(Bs)
+    print('A shape',A.shape,'generic rank',A.subs(b,sp.Rational(7,13)).rank())
+    # rank-drop locus: gcd of determinants of random 13x13 combos
+    random.seed(1)
+    g=0
+    for trial in range(6):
+        Rm=sp.Matrix(13,A.shape[0],lambda i,j:random.randint(-5,5))
+        Cm=sp.Matrix(20,13,lambda i,j:random.randint(-5,5))
+        d=sp.expand((Rm*A*Cm).det(method='berkowitz'))
+        g=sp.gcd(g,d)
+        print('trial',trial,'gcd so far',sp.factor(g),flush=True)
+    # also the 6 basis vectors must stay independent: Pluecker check
