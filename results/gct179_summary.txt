@@ -1,0 +1,58 @@
+L-gct-179 numeric search, attacker B: summary (2026-11-23, about 21:20 UTC)
+=====================================================================
+Status: NO 7-dim witness found. d=7 stalls at an honest residual of about 0.1, while d=6 converges to 1e-18.
+
+0. Correction: the earlier "floor 6e-4" is a chart artifact
+   The iso chart (iso.py; cloud modes iso/cont/mix-iso) does not scale-normalise. Its basis vectors E_i + sum c F_j
+   can be short, so a small f does not mean the forms are small on unit vectors.
+   Local test (seed 11, 331 iso restarts at d=7, best chart f = 8.05e-4 ... 2.1e-3). For the top 5 minima:
+     - rms of E1..E4 on random unit vectors of the orthonormalised 7-space: E1, E2 about 1e-13 (zero by construction),
+       E3 = 0.06-0.09, E4 = 0.015. The residual sits in E3 (dominant) and E4.
+     - Re-polishing by LM in an orthonormal chart centred at the minimum converges (|grad| ~1e-9, J well conditioned,
+       smallest singular values 0.3-0.7) to genuine non-degenerate local minima with f = 0.097, 0.17, 0.21, 0.29, 0.47.
+     - These minima are NOT "6-dim solution + 1 vector". The best hyperplane inside each 7-space (LM over G(6,7)) has
+       f = 0.17-0.66. The nearest exact 6-dim solution is at max principal angle 0.65-0.89 rad (some starts did not
+       converge to any 6-solution: f 3e-3 to 2e-2). The 6-solutions that were reached have full support (20 entries)
+       and are not row/col crosses.
+   The gen chart ([I X]U with unitary U) and the centred charts in ext6.py, seeds.py and sym.py evaluate the forms on
+   vectors of norm >= 1, so their f is an honest upper bound. All d=7 numbers below are honest, except where marked.
+
+1. d=6 calibration (the solver recovers 6 reliably)
+   - gen chart, random starts: 2/20 (seed 1) and 10/80 (seed 5) converge to f < 1e-16. Zariski tangent dims at the
+     solutions are 7-10, so V6 has positive-dimensional components (consistent with attacker C's F_b).
+   - iso chart: 6/35 converge (seed 3).
+   - sym ansatz with the E2-isotropy filter on eigen-dims: 12/212 (seed 4). Without the filter: 4/567.
+   - ext (grow a random 5-dim solution by 1 vector, joint LM): about 50% of grows reach a 6-solution (11/24, seed 1).
+   - Every 6-solution tested (10 random ones plus the cross and the g180 space) has a 1-dim space of first-order extension
+     directions w(H) (matches attacker C, section C3). A 7-dim L exists iff some 6-solution H has span(H, w(H)) exact.
+     For random H, the s^2, s^3, s^4 coefficients of E_k(h + s w) are O(1).
+
+2. d=7 campaigns
+   GitHub run 45246949847 (mode mix, seed 498471, 1 process*): 3350 restarts (1675 iso + 1675 gen).
+       iso-chart best f = 2.8e-4 (artifact, see section 0). gen-chart best f = 0.97.
+   GitHub run 45246956877 (mode cont, seed 568771, 1 process*): 1540 restarts, iso-chart best f = 9.9e-5 (artifact).
+   GitHub run 45261187764 (mode ext6, seed 877641, 1 process*): grows random 6-solutions by 1 vector with joint LM,
+       8 grows per core. First push: 26 cores, 208 grows, best f = 0.113. (Updated below if later pushes arrive.)
+   Local seeds.py (seed 5, 607 grows, joint LM, base perturbation noise 0 / 0.03 / 0.1 / 0.3):
+       F_b (attacker C) at b = 1/4, 1/2, 2, -1, 1/3, 1/2+i/2, e^{2pi i/3}, e^{pi i/3}, 2+i, and random complex b:
+           best f = 0.091 ... 0.129 (about 40 grows each, 120 for random b)
+       W6 (attacker A: zero-sum col 0 + {x (x) (0,-1,1,-i,i)} on rows 0..2): best 0.33 (40 grows)
+       V_zeta = C^4 (x) (1, z5, ..., z5^4), m = 1 and 2, grown by 3 vectors: best 0.59 and 0.80 (40 grows each)
+       All seeds were verified exact first (check_basis about 1e-14).
+   Local sym.py d=7 (seed 77, all 34 cyclic classes of S4xS5 with eigenvalue twists, E2-isotropy filter):
+       164 ansatz attempts, best f = 0.113 (class e|(0123), eigen-dims 0:3, 1:4). Next best 1.6.
+
+   *The workflow ran 1 process per job: nproc honours OMP_NUM_THREADS=1. Fixed in ca0b093 (nproc --all).
+    Future jobs will use every core.
+
+3. Landscape verdict
+   d=6: exact solutions (f ~ 1e-18) from 10-50% of starts under every method.
+   d=7: about 5000 random restarts, about 800 seeded grows, and 164 symmetric-ansatz runs. Not one reached an honest
+        residual below about 0.09. The best minima from unrelated methods (random iso re-polished 0.097, F_b grows 0.091,
+        ext6 0.113, sym 0.113) cluster at the same level, about 0.1. They are non-degenerate local minima: J has full
+        rank and a smallest singular value of about 0.3. There is no slowly decreasing tail.
+   This is consistent with nonexistence of a 7-dim complex L, but it is not a proof. An isolated 7-solution with a tiny
+   basin cannot be excluded numerically.
+
+Code: gct179/ext6.py (grow (d-1)-solutions), gct179/seeds.py (A/C families), gct179/sym.py (E2-isotropy filter),
+      workflow modes ext6 / seeds / combo / sym.
