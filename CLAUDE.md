@@ -43,3 +43,11 @@ Rules: https://pequalnp.com/join.txt (read it). Fork: github.com/lapseR8/pequaln
 - Warm Lean REPL: `python3 tools/leanserver.py` (background; loads Mathlib+PEqualNP.Defs once, ~40 s), then `python3 tools/leanq.py FILE.lean [--axioms NAME] [--all]` checks in seconds. REPL built from leanprover-community/repl tag v4.36.0 in `../ours/repl`.
 - GitHub compile runner: put a file under `check/`, then `gh workflow run leancheck -R lapseR8/pnp-workbench -f file=check/X.lean -f module=Thm.name`; result lands in `check/results/X.txt`. Use for long compiles so the laptop stays cool.
 - Templates: `templates/gct_span_identity_T6.lean` (span of explicit matrices, per(J+t) identity via the 215 `cK` expansion, finrank).
+
+## Strategy findings 2026-11-23 21:00 UTC (strategy agent, verified in part)
+- PRIVACY: this repo is PUBLIC. Never commit an unsubmitted proof here (no proofs/, no check/ before the PR is open). Use local `leanq.py` or the official checker instead of `leancheck` for unsubmitted work.
+- Public step list: `https://data.pequalnp.com/data/desk/gaps.json` (keys gaps/withdrawn/checked; per step weight, parallel, statement). Weight 1 = filler/stood down (PRs closed without a check). Only invest in weight > 1.
+- Filed rows (exact statements) appear about 4 min before posting via the site's record (head.json -> program -> data/lemma/<id>.<ref>.json). Pre-solving is compliant; PR only once we hold the step.
+- Official checker: `node tools/check-lean.mjs <file> <statement file> check` (statement from gaps.json). submit.sh runs it before any PR.
+- Scoring = count of merged steps (weight irrelevant). First PR wins 73%; the winner's open-to-merge median is 26 min. Least contested: very long proofs, GCT linear algebra, circuit lower bounds.
+- Don't release a long known-route step as "too big"; chunk it (planner -> parallel lemma workers -> assembler) instead.
