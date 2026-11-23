@@ -1,0 +1,4 @@
+*.cnf
+*.map
+*.out
+venv/

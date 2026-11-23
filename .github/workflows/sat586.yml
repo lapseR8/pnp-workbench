@@ -1,0 +1,51 @@
+name: sat-586
+on:
+  workflow_dispatch:
+    inputs:
+      sizes:
+        description: JSON list of circuit sizes N
+        default: '[11,12,15,16,17]'
+permissions:
+  contents: write
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        n: ${{ fromJSON(inputs.sizes) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install python-sat and kissat
+        run: |
+          pip install python-sat
+          if ! sudo apt-get install -y kissat; then
+            git clone --depth 1 https://github.com/arminbiere/kissat /tmp/kissat
+            (cd /tmp/kissat && ./configure && make -j2)
+            sudo cp /tmp/kissat/build/kissat /usr/local/bin/
+          fi
+          kissat --version
+      - name: Search N=${{ matrix.n }}, at most 7 OR gates
+        run: |
+          G='{"n":8,"E":[[0,1],[1,2],[2,3],[3,4],[4,0],[1,5],[5,6],[6,7],[7,0]]}'
+          python -I sat/gen.py ${{ matrix.n }} 7 "$G" k.cnf k.map
+          start=$(date +%s)
+          set +e; timeout 19800 kissat -q k.cnf > k.out; rc=$?; set -e
+          secs=$(( $(date +%s) - start ))
+          mkdir -p results
+          verdict=$(grep -m1 '^s ' k.out || echo "s TIMEOUT (exit $rc)")
+          echo "N=${{ matrix.n }} K=7: $verdict, ${secs}s, kissat $(kissat --version)" > results/586_N${{ matrix.n }}.txt
+          if grep -q '^s SATISFIABLE' k.out; then python -I sat/decode.py k.map k.out >> results/586_N${{ matrix.n }}.txt; fi
+          cat results/586_N${{ matrix.n }}.txt
+      - name: Commit result
+        if: always()
+        run: |
+          git config user.name lapseR8
+          git config user.email 269838972+lapseR8@users.noreply.github.com
+          git add results/ 2>/dev/null || exit 0
+          git commit -m "586 search result N=${{ matrix.n }}" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" || exit 0
+          for i in 1 2 3 4 5; do git pull --rebase -q && git push -q && break; sleep $((RANDOM % 20 + 5)); done
