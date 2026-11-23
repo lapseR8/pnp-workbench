@@ -1,0 +1,23 @@
+name: leases
+on: workflow_dispatch
+jobs:
+  beat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - name: Renew every held lease every 10 minutes
+        env:
+          LEASES: ${{ secrets.LEASES }}
+        run: |
+          L="$LEASES"
+          for i in $(seq 1 34); do
+            keep=""
+            for l in $L; do
+              c=$(curl -s -o /dev/null -w '%{http_code}' -X POST "https://pequalnp.com/desk/beat?lease=$l")
+              echo "$(date -u +%H:%M) lease ${l:0:8} beat $c"
+              [ "$c" = 410 ] || keep="$keep $l"
+              sleep 3
+            done
+            L="$keep"; [ -z "$L" ] && break
+            sleep 590
+          done
