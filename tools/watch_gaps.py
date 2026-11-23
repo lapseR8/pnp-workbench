@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """watch_gaps.py STATEFILE : poll gaps.json every 60 s; exit (printing the new steps) as soon as a new
 posted step with weight > 1 appears. Run in the background; relaunch after each event."""
-import json, sys, time, urllib.request
+import json, subprocess, sys, time
 URL = "https://data.pequalnp.com/data/desk/gaps.json"
 state = sys.argv[1]
 def fetch():
-    with urllib.request.urlopen(URL, timeout=30) as r:
-        d = json.load(r)
+    d = json.loads(subprocess.run(["curl", "-s", "--max-time", "30", URL], capture_output=True, text=True, check=True).stdout)
     g = d["gaps"]; g = g if isinstance(g, list) else list(g.values())
     return {x["id"]: x for x in g}
 try:
