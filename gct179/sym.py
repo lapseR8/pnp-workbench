@@ -148,8 +148,11 @@ if __name__ == '__main__':
                 base += b_; Vs += V_
         P = RowProb(base, Vs, rng)
         th = rng.choice([0.3, 1.0, 2.0]) * (rng.normal(size=P.np_) + 1j * rng.normal(size=P.np_))
-        th, f, it = P.solve(th, iters=150)
-        if f < 1e-3:
+        if P.np_ == 0:
+            r0 = P.resid(th); f = float(np.vdot(r0, r0).real); it = 0
+        else:
+            th, f, it = P.solve(th, iters=150)
+        if f < 1e-3 and P.np_ > 0:
             th, f, it2 = P.solve(th, iters=2000)
         vs = ','.join('%d:%d' % (m, k) for m, k in sorted(v.items()) if k)
         line = '%s|%s n=%d dims=%s f=%.3e t=%.0f' % (a, b, n, vs, f, time.time() - t0)

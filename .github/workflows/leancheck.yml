@@ -1,0 +1,53 @@
+name: leancheck
+on:
+  workflow_dispatch:
+    inputs:
+      file:
+        description: Path in this repo of the .lean file to check (e.g. check/L_x.lean)
+      module:
+        description: Optional theorem name for '#print axioms'
+        default: ''
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: wb
+      - uses: actions/checkout@v4
+        with:
+          repository: brilliant-hq/pequalnp-proofs
+          path: proofs
+      - name: Cache Lean build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.elan
+            proofs/lean/.lake
+          key: lean-${{ hashFiles('proofs/lean/lean-toolchain', 'proofs/lean/lake-manifest.json') }}-${{ github.run_id }}
+          restore-keys: lean-${{ hashFiles('proofs/lean/lean-toolchain', 'proofs/lean/lake-manifest.json') }}-
+      - name: Toolchain and Mathlib
+        run: |
+          [ -x ~/.elan/bin/lake ] || (curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none)
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd proofs/lean && lake exe cache get && lake build PEqualNP.Defs 2>&1 | tail -2
+      - name: Check file
+        run: |
+          cd proofs/lean
+          cp "$GITHUB_WORKSPACE/wb/${{ inputs.file }}" /tmp/c.lean
+          [ -n "${{ inputs.module }}" ] && printf '\n#print axioms %s\n' "${{ inputs.module }}" >> /tmp/c.lean
+          start=$(date +%s); set +e; lake env lean /tmp/c.lean > /tmp/out.txt 2>&1; rc=$?; set -e
+          echo "exit=$rc seconds=$(( $(date +%s) - start ))" | tee -a /tmp/out.txt
+          grep -E "error|axioms" /tmp/out.txt | head -40 || true
+          mkdir -p "$GITHUB_WORKSPACE/wb/check/results"
+          cp /tmp/out.txt "$GITHUB_WORKSPACE/wb/check/results/$(basename ${{ inputs.file }} .lean).txt"
+      - name: Commit result
+        run: |
+          cd wb
+          git config user.name lapseR8; git config user.email 269838972+lapseR8@users.noreply.github.com
+          git add check/results && git commit -qm "leancheck result ${{ inputs.file }}" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" || exit 0
+          for i in 1 2 3 4 5; do git pull -q --rebase && git push -q && break; sleep 7; done
