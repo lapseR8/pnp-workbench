@@ -1,0 +1,2 @@
+'smoke' depends on axioms: [propext]
+exit=0 seconds=4
