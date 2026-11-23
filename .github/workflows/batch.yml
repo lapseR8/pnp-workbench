@@ -1,0 +1,52 @@
+name: batch
+on:
+  workflow_dispatch:
+    inputs:
+      spec:
+        description: 'Searches separated by ; each as: TAG K N GRAPHJSON'
+      leases:
+        description: Also renew the leases in secret LEASES (true/false)
+        default: 'false'
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install python-sat and kissat
+        run: |
+          pip install python-sat
+          if ! sudo apt-get install -y kissat; then
+            git clone --depth 1 https://github.com/arminbiere/kissat /tmp/kissat
+            (cd /tmp/kissat && ./configure && make -j4)
+            sudo cp /tmp/kissat/build/kissat /usr/local/bin/
+          fi
+          echo "cores: $(nproc)"; kissat --version
+      - name: Run searches (and lease renewal)
+        env:
+          LEASES: ${{ secrets.LEASES }}
+          SPEC: ${{ inputs.spec }}
+        run: |
+          git config user.name lapseR8
+          git config user.email 269838972+lapseR8@users.noreply.github.com
+          if [ "${{ inputs.leases }}" = true ]; then
+            ( L="$LEASES"; for i in $(seq 1 34); do keep=""; for l in $L; do
+                c=$(curl -s -o /dev/null -w '%{http_code}' -X POST "https://pequalnp.com/desk/beat?lease=$l")
+                echo "$(date -u +%H:%M) lease ${l:0:8} beat $c"; [ "$c" = 410 ] || keep="$keep $l"; sleep 3; done
+                L="$keep"; [ -z "$L" ] && break; sleep 590; done ) &
+            LP=$!
+          fi
+          pids=""
+          IFS=';' read -ra items <<< "$SPEC"
+          for it in "${items[@]}"; do
+            read -r tag k n g <<< "$it"
+            sat/run_one.sh "$tag" "$k" "$n" "$g" &
+            pids="$pids $!"
+          done
+          wait $pids
+          [ -n "${LP:-}" ] && kill $LP 2>/dev/null || true
