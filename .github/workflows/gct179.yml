@@ -14,6 +14,9 @@ on:
       tag:
         description: 'result tag'
         default: 'a'
+      pushint:
+        description: 'seconds between interim pushes'
+        default: '1200'
 permissions:
   contents: write
 jobs:
@@ -45,10 +48,16 @@ jobs:
           }
           pids=""
           for p in $(seq 1 $N); do
-            (cd gct179 && python cloud.py ${{ inputs.mode }} ${{ inputs.d }} $(( ${{ github.run_id }} % 100000 * 10 + p )) ${{ inputs.secs }} ../$OUT.p$p.txt) &
+            SEED=$(( ${{ github.run_id }} % 100000 * 10 + p ))
+            case "${{ inputs.mode }}" in
+              ext6) CMD="python ext6.py ${{ inputs.d }} $SEED ${{ inputs.secs }} ../$OUT.p$p.txt" ;;
+              sym) CMD="python sym.py ${{ inputs.d }} $SEED ${{ inputs.secs }} ../$OUT.p$p.txt" ;;
+              *) CMD="python cloud.py ${{ inputs.mode }} ${{ inputs.d }} $SEED ${{ inputs.secs }} ../$OUT.p$p.txt" ;;
+            esac
+            (cd gct179 && $CMD) &
             pids="$pids $!"
           done
-          ( while true; do sleep 2700; push; done ) &
+          ( while true; do sleep ${{ inputs.pushint }}; push; done ) &
           PP=$!
           wait $pids
           kill $PP 2>/dev/null || true
