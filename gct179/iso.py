@@ -54,6 +54,7 @@ class IsoProb:
         self.c = c / np.linalg.norm(c, axis=1, keepdims=True)
         self.iu = np.triu_indices(9, 1)
         self.np_ = (9 - d) * d + 36 + 9
+        self.w = np.array([1.0, 1.0])
 
     def unpack(self, th):
         d = self.d
@@ -83,12 +84,14 @@ class IsoProb:
         B = self.basis(th)
         t = (self.c @ B).reshape(-1, R, C)
         if not jac:
-            return forms(t)[:, 2:].ravel()
+            return (forms(t)[:, 2:] * self.w).ravel()
         Ef, G = forms(t, True)
+        Ef = Ef * np.r_[1, 1, self.w]
+        G = G * np.r_[1, 1, self.w][None, :, None]
         dB = self.dbasis(th)  # n x d x 20
         # dt/dth_k = c @ dB_k : N x n x 20
-        dt = np.einsum('nm,kmp->nkp', self.c, dB)
-        J = np.einsum('nqp,nkp->nqk', G[:, 2:, :], dt)
+        dt = np.tensordot(self.c, dB, axes=([1], [1]))  # n x k x p
+        J = np.matmul(G[:, 2:, :], np.swapaxes(dt, 1, 2))
         return Ef[:, 2:].ravel(), J.reshape(-1, len(th))
 
     def solve(self, th, iters=300, tol=1e-28, verbose=False):

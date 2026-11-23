@@ -10,7 +10,7 @@ on:
         default: '7'
       secs:
         description: 'search seconds per process'
-        default: '17400'
+        default: '12600'
       tag:
         description: 'result tag'
         default: 'a'

@@ -6,6 +6,7 @@ NE = R * C
 INJ = np.array(list(itertools.permutations(range(C), R)))  # 120 x 4
 # for each row i and column j: indices of injections with f(i)=j
 SEL = [[np.where(INJ[:, i] == j)[0] for j in range(C)] for i in range(R)]
+SM = [np.array([[1.0 if INJ[f, i] == j else 0.0 for j in range(C)] for f in range(len(INJ))]) for i in range(R)]
 
 
 def esym(vals):
@@ -18,20 +19,31 @@ def esym(vals):
     return e
 
 
+def _es(cols):
+    """cols: list of arrays (same shape). returns list [e1..em]."""
+    e = [np.ones_like(cols[0])]
+    for v in cols:
+        ne = [e[0]]
+        for k in range(1, len(e)):
+            ne.append(e[k] + v * e[k - 1])
+        ne.append(v * e[-1])
+        e = ne
+    return e[1:]
+
+
 def forms(t, grad=False):
     """t: N x 4 x 5. E: N x 4 level forms (sum over injections of e_k), G: N x 4 x 20."""
     N = t.shape[0]
-    V = np.stack([t[:, i, INJ[:, i]] for i in range(R)], axis=2)  # N x 120 x 4
-    e = esym(V)
-    E = e[..., 1:].sum(axis=1)
+    V = [np.ascontiguousarray(t[:, i, INJ[:, i]]) for i in range(R)]  # each N x 120
+    e = _es(V)
+    E = np.stack([x.sum(axis=1) for x in e], axis=1)
     if not grad:
         return E
     G = np.zeros((N, R, NE), dtype=complex)
     for i in range(R):
-        others = [k for k in range(R) if k != i]
-        eo = esym(V[..., others])  # N x 120 x 4
-        for j in range(C):
-            G[:, :, i * C + j] = eo[:, SEL[i][j], :].sum(axis=1)
+        eo = _es([V[k] for k in range(R) if k != i])  # e1,e2,e3 of others
+        eo = np.stack([np.ones_like(V[0])] + eo, axis=1)  # N x 4 x 120
+        G[:, :, i * C:(i + 1) * C] = eo @ SM[i]
     return E, G
 
 
