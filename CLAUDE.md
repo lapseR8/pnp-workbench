@@ -56,3 +56,8 @@ Rules: https://pequalnp.com/join.txt (read it). Fork: github.com/lapseR8/pequaln
 - Released L-gct-179 (statement_seems_false; evidence in results/gct179_evidence/, the max appears to be 6) and L-meta-1356 (out_of_time, paused before starting). No steps held; all Actions runs cancelled.
 - To resume: start `tools/leanserver.py` (warm REPL), run `tools/watch_gaps.py /tmp/claude-502/gaps_seen.json` in the background, claim with `tools/claim.sh`, prove short fresh weight>1 steps immediately, submit with `tools/submit.sh` (official checker guard).
 - Strategy report: results/strategy_2026-11-23.md.
+
+## 2026-11-24 notes
+- Desk QUOTA: after ~8 claims in a short window the desk answers 429 "you have taken 8 steps in th...". Pace claim cycles to ~1 claim / 2 min. NEVER call /desk/next with raw curl (it claims a step; lose the lease id). Use tools/pnp.sh or tools/claim.sh only.
+- Upstream moved to open-goat/pequalnp-proofs; git fetch currently returns "repository disabled" (API and PRs work). submit.sh checks merged status via the API.
+- Petersen-minus-vertex generator (private, ours/gen/): AND(0,1)/(0,2)/(0,3) first-gate pieces; official checker ACCEPTED 1793; bases 1934, 1870 compile (~4 min). PRs: #6648 (1793), #6658 (2736).
