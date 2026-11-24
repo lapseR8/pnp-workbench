@@ -7,8 +7,8 @@ cd "$R"; J=.pnp/$id.json
 rel=$(python3 -c "import json;print(json.load(open('$J'))['gap']['file'])"); mod=$(python3 -c "import json;print(json.load(open('$J'))['gap']['module'])")
 lease=$(python3 -c "import json;print(json.load(open('$J'))['lease']['id'])")
 if grep -qE 'sorry|native_decide|"|^ *#' "$rel"; then echo "RULE VIOLATION"; exit 1; fi
-git fetch -q upstream
-if git ls-tree upstream/main "$rel" | grep -q .; then echo "ALREADY MERGED UPSTREAM"; exit 1; fi
+git fetch -q upstream 2>/dev/null || echo "note: git fetch upstream failed; using API"
+if gh api "repos/brilliant-hq/pequalnp-proofs/contents/$rel" --silent 2>/dev/null; then echo "ALREADY MERGED UPSTREAM"; exit 1; fi
 T0=$(mktemp -d); curl -s https://data.pequalnp.com/data/desk/gaps.json -o "$T0/gaps.json"
 python3 - "$T0/gaps.json" "$id" "$T0/st.txt" <<'PY' || exit 1
 import json, sys
