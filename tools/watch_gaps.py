@@ -19,7 +19,7 @@ while True:
         time.sleep(60); continue
     def good(g):
         t = str(g.get("title", "")); c = str(g.get("context", ""))
-        return ((g.get("weight") or 0) > 1 and not t.startswith("A step toward")
+        return ((g.get("weight") or 0) >= 10 and not t.startswith("A step toward") and not t.startswith("It is false that")
                 and "hypothesis of a checked reduction" not in c
                 and not any(w in c.lower() for w in ("open: a hard", "hard and open", "may be false", "conjecture")))
     new = [cur[i] for i in cur if i not in seen and good(cur[i])]
