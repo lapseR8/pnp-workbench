@@ -1,0 +1,38 @@
+name: enc
+on:
+  workflow_dispatch:
+    inputs:
+      script:
+        default: s23625.py
+      args:
+        default: ''
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install python-sat
+      - name: Work
+        timeout-minutes: 335
+        working-directory: search
+        run: |
+          mkdir -p results prep
+          set +e; timeout 19800 python ${{ inputs.script }} ${{ inputs.args }} > work.log 2>&1; set -e
+          echo "done; log lines: $(wc -l < work.log)"
+      - name: Encrypt and commit
+        if: always()
+        working-directory: search
+        env:
+          ENC_KEY: ${{ secrets.ENC_KEY }}
+        run: |
+          mkdir -p ../enc
+          tar czf - work.log results prep 2>/dev/null | openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:ENC_KEY -out ../enc/${{ inputs.script }}.${{ github.run_id }}.enc
+          cd .. && git config user.name lapseR8 && git config user.email 269838972+lapseR8@users.noreply.github.com
+          git add enc && git commit -qm "enc result ${{ inputs.script }}" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" || true
+          for i in 1 2 3 4 5; do git pull -q --rebase && git push -q && break; sleep 9; done
